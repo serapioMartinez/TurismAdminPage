@@ -8,6 +8,7 @@ import CstSwitch from '../components/CstSwitch';
 import Cookies from 'universal-cookie';
 import FormData from 'form-data';
 import axios from 'axios';
+import logoReact from '../logo.svg';
 const cookies = new Cookies();
 const styles = makeStyles({
   input: {
@@ -88,6 +89,11 @@ const styles = makeStyles({
 
 function ItemConfig() {
   const classes = styles();
+  
+  const [loaders, setLoaders] = useState({
+    imagen: false
+  })
+
   const [enableInputs, setEnableInputs] = useState({
     "nombre": true,
     "descripcion": true,
@@ -132,6 +138,7 @@ function ItemConfig() {
       alert("No pudes subir una nueva imagen, ya que el establecimiento ya cuenta con un administrador!");
       return;
     }
+    setLoaders({...loaders, imagen: true})
     const form = document.getElementById('form');
     const input_image = document.getElementById('input_image');
     if (input_image.value == '') { alert('Por favor carga una imagen!'); return; }
@@ -139,7 +146,10 @@ function ItemConfig() {
     let imageId = datos.imagen
     if (imageId != null) {
       const confirmation = window.confirm("Estas a punto de eliminar la imagen actual para subir una nueva!")
-      if (!confirmation) return;
+      if (!confirmation) {
+        setLoaders({...loaders, imagen: false})
+        return;
+      }
     }
     axios.post('http://localhost:5000/images/uploadTopicPhoto', formData, {
       headers: {
@@ -166,6 +176,8 @@ function ItemConfig() {
         
       alert("Imagen subida exitosamente! Por favor de click en ACEPTAR debajo del formulario");
         return;
+      }).finally(()=>{
+        setLoaders({...loaders, imagen: false})
       });
       if (imageId != null) {
         axios.delete('http://localhost:5000/images/imagen', {
@@ -177,25 +189,15 @@ function ItemConfig() {
         }).catch(err => {
           console.log("Un error a ocurrido: ", err.message);
           return;
+        }).finally(()=>{
+          setLoaders({...loaders, imagen: false})
         });
       }
-      /*
-      axios.post('http://localhost:5000/admin_ciudad/subirRepresentativa',{
-        data:{
-          username: cookies.get('username'),
-          pass: cookies.get('password'),
-          imagen: data.id
-        }
-      }).then(res => {
-        console.log("Actualizacion de imagen en DB exitosa");
-      }).catch(err => {
-        alert("Error actualizando informacion en base de datos! Intente con el boton 'Aceptar'")
-        console.log("Error al actualizar imagen en DB");
-      })
-      */
     })
       .catch((err) => {
         console.log(err);
+      }).finally(() => {
+        setLoaders({...loaders, imagen: false})
       });
   }
 
@@ -408,7 +410,12 @@ function ItemConfig() {
       <div className='wrapper'>
         <h1 className='title'>{params.item.toUpperCase() + " -> ID: " + params.id}</h1>
         <div className={classes.userImage}>
-          <div className={classes.imageContainer} style={datos.imagen==null?{
+          {
+            loaders.imagen?(
+              <img className='App-logo' src={logoReact}/>
+            ):(
+              <>
+              <div className={classes.imageContainer} style={datos.imagen==null?{
             backgroundColor: "greenyellow"
           }:{
             backgroundImage: `url("https://drive.google.com/uc?id=${datos.imagen}")`,
@@ -417,11 +424,6 @@ function ItemConfig() {
             backgroundSize: "cover",
             backgroundRepeat: "no-repeat"
           }}>
-            {/*
-            {datos.imagen == null ? <span>IMAGEN</span> : (
-              <img style={{ maxWidth: '100%', maxHeight: '100%' }} src={`https://drive.google.com/uc?id=${datos.imagen}`} />
-            )}
-            */}
           </div>
           <form onSubmit={handleSubmitImage} id='form' encType='multipart/form-data' method='post' className={classes.userImage}>
             <input type='file' name='image' id='input_image' style={{width: "100%"}}/>
@@ -429,6 +431,9 @@ function ItemConfig() {
             <input type='text' name='pass' value={cookies.get('password')} hidden />
             <input type='submit' className='boton' value='SUBIR' />
           </form>
+          </>
+            )
+          }
         </div>
         <div className={classes.formData}>
           <div className={classes.input}>
@@ -466,7 +471,7 @@ function ItemConfig() {
                   disabled={enableInputs.tipoEstablecimiento}
                   style={{ color: "white", backgroundColor: "#ffffff45", borderRadius: "5px", paddingLeft: "0.5rem", width: "90%", paddingTop: "0.5rem" }}>
                   <option style={{ backgroundColor: "black" }} value="NT">NO HAY TIPO</option>
-                  <option style={{ backgroundColor: "black" }} value="RS">RESTANURANTE</option>
+                  <option style={{ backgroundColor: "black" }} value="RS">RESTAURANTE</option>
                   <option style={{ backgroundColor: "black" }} value="HT">HOTEL</option>
                   <option style={{ backgroundColor: "black" }} value="TR">TRANSPORTE</option>
                   <option style={{ backgroundColor: "black" }} value="MR">MERCADO</option>

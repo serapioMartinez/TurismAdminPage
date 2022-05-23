@@ -7,7 +7,10 @@ import CstSwitch from '../components/CstSwitch';
 import { useLocation } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 import axios from 'axios';
+import logoReact from '../logo.svg'
 const cookies = new Cookies();
+const endpoint = (cookies.get('userType') == "CIUDAD") ? "http://localhost:5000/admin_ciudad/" : "http://localhost:5000/admin_establecimiento/";
+
 const styles = makeStyles({
   input: {
     boxSizing: "border-box",
@@ -73,6 +76,9 @@ function UserConfig() {
   const userRegExp = /^[^@"'<>| ]+[a-zA-Z-0-9]{5,}$/i;
   const classes = styles();
   const location = useLocation();
+  const [loaders, setLoaders] = useState({
+    image: false
+  })
   const [enableInputs, setEnableInputs] = useState({
     "usuario": true,
     "nombre": true,
@@ -96,14 +102,15 @@ function UserConfig() {
     setEnableInputs(newEnables);
   }
   const handleUpdateData = () => {
-    if(!dataInput.usuarioOK || !dataInput.correoOK) {
+    if (!dataInput.usuarioOK || !dataInput.correoOK) {
       alert("Asegurese de llenar los campos correctamente!");
       return;
     }
-    axios.put("http://localhost:5000/admin_ciudad/usuario",{
+
+    axios.put(`${endpoint + "usuario"}`, {
       data: {
         username: cookies.get('username'),
-        newUsername: dataInput.usuario, 
+        newUsername: dataInput.usuario,
         pass: cookies.get('password'),
         id: cookies.get('userId'),
         nombre: dataInput.nombre,
@@ -112,47 +119,47 @@ function UserConfig() {
         foto: dataInput.foto
       }
     }).then(res => {
-      if(res.data.error) alert("Ha ocurrido un error al intentar actualizar los datos")
-      else{
+      if (res.data.error) alert("Ha ocurrido un error al intentar actualizar los datos")
+      else {
         let expiracion = new Date();
-        expiracion.setHours(expiracion.getHours()+6);
-        console.log(expiracion)     
+        expiracion.setHours(expiracion.getHours() + 6);
+        console.log(expiracion)
         cookies.set("username", dataInput.usuario, {
-          path:'/',
+          path: '/',
           expires: expiracion
         });
         cookies.set("password", cookies.get('password'), {
-          path:'/',
+          path: '/',
           expires: expiracion
         });
         cookies.set("userId", cookies.get('userId'), {
-          path:'/',
+          path: '/',
           expires: expiracion
         });
         cookies.set("userType", cookies.get('userType'), {
-          path:'/',
+          path: '/',
           expires: expiracion
         });
         cookies.set("ciudadId", cookies.get('ciudadId'), {
-          path:'/',
+          path: '/',
           expires: expiracion
         });
         alert("Proceso exitoso!")
 
       }
-    }).catch(err=>{
+    }).catch(err => {
       alert("Ha ocurrido un error ")
       console.log(err.message)
     })
   }
-  const handleOnChangeInput= prop=>evt=>{
-    if(prop==="usuario") setDataInput({...dataInput,[prop]:evt.target.value,usuarioOK: userRegExp.test(evt.target.value)});
-    else if(prop==="correo") setDataInput({...dataInput,[prop]:evt.target.value,correoOK: mailRegExp.test(evt.target.value)});
-    else setDataInput({...dataInput,[prop]: evt.target.value})
+  const handleOnChangeInput = prop => evt => {
+    if (prop === "usuario") setDataInput({ ...dataInput, [prop]: evt.target.value, usuarioOK: userRegExp.test(evt.target.value) });
+    else if (prop === "correo") setDataInput({ ...dataInput, [prop]: evt.target.value, correoOK: mailRegExp.test(evt.target.value) });
+    else setDataInput({ ...dataInput, [prop]: evt.target.value })
   }
   const handleSubmitImage = e => {
     e.preventDefault();
-    //agregar algun efecto de carga
+    setLoaders({ ...loaders, image: true })
     const form = document.getElementById('form');
     const input_image = document.getElementById('input_image');
     if (input_image.value == '') { alert('Por favor carga una imagen!'); return; }
@@ -160,9 +167,12 @@ function UserConfig() {
     let imageId = dataInput.foto
     if (imageId != null) {
       const confirmation = window.confirm("Estas a punto de eliminar la imagen actual para subir una nueva!")
-      if (!confirmation) return;
+      if (!confirmation) {
+        setLoaders({ ...loaders, image: false })
+        return;
+      }
     }
-    axios.post('http://localhost:5000/images/uploadAdminCityProfilePhoto', formData, {
+    axios.post(`http://localhost:5000/images/${(cookies.get('userType') == "CIUDAD") ? "uploadAdminCityProfilePhoto" : "uploadAdminEstablishmentProfilePhoto"}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       }
@@ -170,21 +180,28 @@ function UserConfig() {
       const data = res.data;
       console.log(data);
       setDataInput({ ...dataInput, foto: data.id });
-      axios.post('http://localhost:5000/admin_ciudad/subirFotoPerfil',{
-        data:{
+      axios.post(`${endpoint + "subirFotoPerfil"}`, {
+        data: {
           username: cookies.get('username'),
           pass: cookies.get('password'),
           foto: data.id
         }
       }).then(res => {
+        if(res.data.error){
+          console.log(res.data.error);
+          alert("No se pudo cargar la imagen, intente de nuevo mas tarde!")
+          setLoaders({...loaders, image: false})
+          return
+        }
         console.log("Imagen actualizada");
         console.log(res.data)
-      alert("Imagen subida exitosamente!");
+        alert("Imagen subida exitosamente!");
       }).catch(err => {
         console.log("Un error a ocurrido: ", err.message);
-        
-      alert("Imagen subida exitosamente! Por favor de click en ACEPTAR debajo del formulario");
+        alert("Imagen subida exitosamente! Por favor de click en ACEPTAR debajo del formulario");
         return;
+      }).finally(() => {
+        setLoaders({...loaders, image: false})
       });
       if (imageId != null) {
         axios.delete('http://localhost:5000/images/imagen', {
@@ -196,11 +213,15 @@ function UserConfig() {
         }).catch(err => {
           console.log("Un error a ocurrido: ", err.message);
           return;
+        }).finally(() => {
+          setLoaders({...loaders, image: false})
         });
       }
     })
       .catch((err) => {
         console.log(err);
+      }).finally(() => {
+        setLoaders({...loaders, image: false})
       });
   }
   return (
@@ -208,22 +229,26 @@ function UserConfig() {
       <div className='wrapper'>
         <h1 className='title'>DATOS DE ADMINISTRADOR</h1>
         <div className={classes.userImage}>
-          <div className={classes.icon} style={dataInput.foto==null?{
-            backgroundColor: "black"
-          }:{
-            backgroundImage: `url("https://drive.google.com/uc?id=${dataInput.foto}")`,
-            
-            backgroundPosition: "0 0 ",
-            backgroundSize: "cover",
-            backgroundRepeat: "no-repeat"
-          }}>
-            {dataInput.foto==null?
-            <AccountCircleIcon style={{ fontSize: "200" , margin: "1rem auto"}} />:
-            false
-            }
-          </div>
+          {
+            loaders.image ? (
+              <img className='App-logo' src={logoReact} />
+            ) : (<div className={classes.icon} style={dataInput.foto == null ? {
+              backgroundColor: "black"
+            } : {
+              backgroundImage: `url("https://drive.google.com/uc?id=${dataInput.foto}")`,
+
+              backgroundPosition: "0 0 ",
+              backgroundSize: "cover",
+              backgroundRepeat: "no-repeat"
+            }}>
+              {dataInput.foto == null ?
+                <AccountCircleIcon style={{ fontSize: "200", margin: "1rem auto" }} /> :
+                false
+              }
+            </div>)
+          }
           <form onSubmit={handleSubmitImage} id='form' encType='multipart/form-data' method='post' className={classes.userImage}>
-            <input type='file' name='image' id='input_image'/>
+            <input type='file' name='image' id='input_image' />
             <input type='text' name='username' value={cookies.get('username')} hidden />
             <input type='text' name='pass' value={cookies.get('password')} hidden />
             <input type='submit' className='boton' value='SUBIR' />
@@ -234,14 +259,14 @@ function UserConfig() {
             <AccountCircleIcon className={classes.iconInput} />
             <CssTextField
               disabled={enableInputs.usuario}
-              
+
               value={dataInput.usuario}
               onChange={handleOnChangeInput("usuario")}
               className={classes.margin}
               style={{ margin: " auto 1.5rem ", width: "90%", paddingTop: "0.5rem" }}
               id="custom-css-standard-input"
               label="Usuario" />
-              <FormHelperText
+            <FormHelperText
               style={{ color: "#992254", paddingLeft: "1.5rem", fontSize: "0.8rem", fontWeight: "bold" }}>
               {dataInput.usuarioOK ? '' : 'Usuario debe contener de 2 a 20 caracteres excepto  @ \" \' <> o espacio '}
             </FormHelperText>
@@ -275,7 +300,7 @@ function UserConfig() {
               className={classes.margin}
               style={{ margin: " auto 1.5rem ", width: "90%", paddingTop: "0.5rem" }}
               id="custom-css-standard-input" label="Correo" />
-              <FormHelperText
+            <FormHelperText
               style={{ color: "#992254", paddingLeft: "1.5rem", fontSize: "0.8rem", fontWeight: "bold" }}>
               {dataInput.correoOK ? '' : 'Asegurese de usar una direccion de correo valida '}
             </FormHelperText>

@@ -1,56 +1,44 @@
 import { Fragment, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import {
     ProSidebar,
     Menu,
     MenuItem,
     SidebarHeader,
-    SidebarFooter,
     SidebarContent
 } from "react-pro-sidebar";
 import { useNavigate } from "react-router-dom";
 import FormatListBulletedIcon from '@material-ui/icons/FormatListBulleted';
-import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 
 //Iconos
 import HomeIcon from '@material-ui/icons/Home';
-import LocalDiningIcon from '@material-ui/icons/LocalDining';
-import NaturePeopleIcon from '@material-ui/icons/NaturePeople';
-import DateRangeIcon from '@material-ui/icons/DateRange';
-import LandscapeIcon from '@material-ui/icons/Landscape';
-import NoteIcon from '@material-ui/icons/Note';
-import ThumbsUpDownIcon from '@material-ui/icons/ThumbsUpDown';
+import ExploreIcon from '@material-ui/icons/Explore';
 
 import 'react-pro-sidebar/dist/css/styles.css';
 import Header from "./Header.css";
+import Cookies from "universal-cookie";
+import { Schedule } from "@material-ui/icons";
+const cookie = new Cookies();
 
 function SideBarEstablecimiento() {
     let navigate = useNavigate();
 
     const clave = window.location.href.split('/').at(-1);
     const [menuCollapse, setMenuCollapse] = useState(false);
-    const [activeMenuItems, setActiveMenuItems] = useState({
-        "inicio": (clave=="inicio")?true:false,
-        "platillos": (clave=="platillos")?true:false,
-        "personajes": (clave=="personajes")?true:false,
-        "festividades": (clave=="festividades")?true:false,
-        "notas": (clave=="notas")?true:false,
-        "zonas": (clave=="zonas")?true:false,
-        "reseñas": (clave=="reseñas")?true:false,
+    const [activeMenuItem, setActiveMenuItem] = useState({
+        "activo": clave
     });
     const menuIconClick = () => {
         menuCollapse ? setMenuCollapse(false) : setMenuCollapse(true);
     }
     const setActivate = item => {
         console.log(item);
-        if (activeMenuItems[item]) return;
+        if (activeMenuItem.activo==item) return;
+        
+        setActiveMenuItem({activo: item})
         switch(item){
             case "inicio": 
-            case "platillos": 
-            case "personajes": 
-            case "festividades": 
-            case "notas": 
-            case "zonas": 
+            case "atencion":
+            case "direcciones":
             navigate(item);break;
             default: navigate("inicio");break;
         }
@@ -66,13 +54,13 @@ function SideBarEstablecimiento() {
                     </SidebarHeader>
                     <SidebarContent>
                         <Menu >
-                            <MenuItem active={activeMenuItems.inicio} onClick={() => navigate('inicio')} icon={<HomeIcon />}>
+                            <MenuItem active={activeMenuItem.activo=="inicio"} onClick={() => setActivate('inicio')} icon={<HomeIcon />}>
                                 INICIO
                             </MenuItem>
-                            <MenuItem active={activeMenuItems.platillos} onClick={() => setActivate("platillos")} icon={<LocalDiningIcon />} >
+                            <MenuItem active={activeMenuItem.activo=="atencion"} onClick={() => cookie.get('establecimientoId')=='null'?false:setActivate("atencion")} icon={<Schedule />} >
                                 HORARIO ATENCION
                             </MenuItem>
-                            <MenuItem active={activeMenuItems.personajes} onClick={() => setActivate("personajes")} icon={<NaturePeopleIcon />}>
+                            <MenuItem active={activeMenuItem.activo=="direcciones"} onClick={() => cookie.get('establecimientoId')=='null'?false:setActivate("direcciones")} icon={<ExploreIcon />}>
                                 DIRECCIONES
                             </MenuItem>
                         </Menu>

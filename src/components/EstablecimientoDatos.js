@@ -50,7 +50,6 @@ export default function EstablecimientoDatos(props) {
             axios.get(`http://localhost:5000/no_users/establecimientos/${cookie.get('establecimientoId')}/0`)
             .then(res => {
                 const data = res.data;
-                console.log(data)
                 setDatos({...datos,
                     nombre: data.NOMBRE,
                     correo: data.CORREO,
@@ -58,7 +57,8 @@ export default function EstablecimientoDatos(props) {
                     calificacion: data.CALIFICACION,
                     tipo: data.TIPO
                 })
-                props.action('atencion')
+                props.isTransporte(data.TIPO=='TR');
+                props.action('atencion');
             }).catch(err=>{
                 console.log("Error: ",err.message);
                 alert("Ha ocurrido un error al intentar obtener los datos de la ciudad administrada. ¡Por favor recargue la pagina!")
@@ -82,7 +82,12 @@ export default function EstablecimientoDatos(props) {
             <h2 className={classes.data}>TELEFONO: {datos.telefono!=null?datos.telefono:"<< TELEFONO >>"}</h2>
         </div>
         <div>
-            <button onClick={() => navigate('/establecimiento/establecimiento')} class="boton">EDITAR</button>
+            <button onClick={() => navigate('/establecimiento/establecimiento')} class="boton">{datos.id!='null'?"EDITAR":"NUEVO"}</button>
+            {
+                datos.id=='null'?
+                <button onClick={() => navigate('/establecimiento/reclamar')} class="boton">RECLAMAR</button>:
+                false
+            }
         </div>
     </div>
   )

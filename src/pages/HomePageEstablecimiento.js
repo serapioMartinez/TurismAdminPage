@@ -33,9 +33,12 @@ export default function HomePageEstablecimiento() {
   const [statusAxios , setStatusAxios]= useState({
     establecimiento: false,
     atencion: false,
-    direccion: false
+    direccion: false,
+    transporte: false
   });
+  const [isTransporte, setIsTransporte] = useState(false);
   const handleStatus = prop => {
+    if(prop=='')return;
     setStatusAxios({...statusAxios,[prop]:true});
   }
 
@@ -44,11 +47,16 @@ export default function HomePageEstablecimiento() {
       <div className={classes.fistLevel}>
         <div>
           <AdminDatos action={handleStatus}/>
-          <EstablecimientoDatos status={statusAxios.establecimiento} action={handleStatus}/>
+          <EstablecimientoDatos status={statusAxios.establecimiento} action={handleStatus} isTransporte={setIsTransporte}/>
         </div>
         <div>
           <ItemInfo next="direccion" status={statusAxios.atencion} action={handleStatus} type="atencion" />
-          <ItemInfo status={statusAxios.direccion} action={handleStatus} type="direcciones" />
+          <ItemInfo next={isTransporte?'transporte':''} status={statusAxios.direccion} action={handleStatus} type="direcciones" />
+
+          {isTransporte?<div>
+            <ItemInfo status={statusAxios.transporte} action={handleStatus} type="transporte" />
+          </div>:
+          false}
         </div>
       </div>
     </div>

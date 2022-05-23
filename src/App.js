@@ -15,6 +15,10 @@ import { Fragment } from "react";
 import Registration from "./pages/Registration";
 import SideBarEstablecimiento from "./components/SideBarEstablecimiento";
 import HomePageEstablecimiento from "./pages/HomePageEstablecimiento";
+import EstablecimientoConfig from "./pages/EstablecimientoConfig";
+import ItemConfigEst from "./pages/ItemConfigEst";
+import EstablecimientoClaim from "./pages/EstablecimientoClaim";
+import TransporteConfig from "./pages/TransporteConfig";
 export default function App() {
   return (
     <BrowserRouter>
@@ -42,8 +46,13 @@ export default function App() {
             </Fragment>
         } >
           <Route path="inicio" element={<HomePageEstablecimiento />} />
-          <Route path="direccion" element={<Items />} />
-          <Route path="atencion" element={<Items />} />
+          <Route path="usuario" element={<UserConfig />} />
+          <Route path="establecimiento" element={<EstablecimientoConfig/>} />
+          <Route path="reclamar" element={<EstablecimientoClaim/>} />
+          <Route path=":item" element={<Items />} />
+          <Route path=":item/:id" element={<ItemConfigEst />} />
+          <Route path="transporte/:id" element={<TransporteConfig />} />
+          <Route path="atencion" element={<ItemConfigEst />} />
         </Route>
       </Routes>
     </BrowserRouter>

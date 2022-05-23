@@ -40,7 +40,7 @@ export default function AdminDatos(props) {
     const handleDatos = () => {
         console.log("Renderizando AdminDatos")
         if(datos.nombre==''){
-            axios.get("http://localhost:5000/admin_establecimiento/usuario",{
+            axios.get(`http://localhost:5000/${cookies.get('userType')=='CIUDAD'?'admin_ciudad':'admin_establecimiento'}/usuario`,{
             params:{
                 id: cookies.get('userId')
             }
@@ -71,12 +71,12 @@ export default function AdminDatos(props) {
             <AccountCircleIcon style={{fontSize: 80}}/>
         </div>
         <div className={classes.dataWrapper}>
-            <h1 className={classes.username}>Bienvenido: {cookies.get('username')}</h1>
+            <h1 className={classes.username}>Bienvenido: {datos.nombre}</h1>
             <h2 className={classes.data}>CARGO: {datos.cargo?datos.cargo:"<< CARGO >>"}</h2>
             <h2 className={classes.data}>ID: {cookies.get('userId')}</h2>
         </div>
         <div>
-            <Link to={"/ciudad/usuario"} state={{
+            <Link to={(cookies.get('userType')=="CIUDAD")?"/ciudad/usuario":"/establecimiento/usuario"} state={{
                     nombre: datos.nombre,
                     correo: datos.correo,
                     cargo: datos.cargo,

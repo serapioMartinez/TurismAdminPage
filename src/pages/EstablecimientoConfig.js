@@ -9,22 +9,21 @@ import { useLocation } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import logoReact from '../logo.svg';
-const cookie = new Cookies();
-const endpoint = "http://localhost:5000/admin_ciudad";
+import logoReact from '../logo.svg'
 
-const tiposTurismo = {
-  "NT":"NO HAY TIPO",
-  "AV":"AVENTURA",
-  "DP":"DEPORTE",
-  "NG":"NEGOCIOS",
-  "CL":"CULTURAL",
-  "GS":"GASTRONOMICO",
-  "AQ":"ARQUEOLICO",
-  "SL":"SALUD",
-  "RL":"RURAL",
-  "EC":"ECOLOGICO",
-  "ES":"ESPIRITUAL"
+const cookie = new Cookies();
+const endpoint = "http://localhost:5000/admin_establecimiento";
+
+const tipoEstablecimento = {
+  "NT": "NO HAY TIPO",
+  "RS": "RESTAURANTE",
+  "HT": "HOTEL",
+  "TR": "TRANSPORTE",
+  "MR": "MERCADO",
+  "BN": "BANCO",
+  "GB": "GOBIERNO",
+  "SP": "SUPERMERCADO",
+  "AB": "ABARROTES"
 
 }
 
@@ -91,39 +90,37 @@ const styles = makeStyles({
     width: "100%",
     margin: "1rem 1rem 0 1rem"
   },
-  containerSelection:{
+  containerSelection: {
     display: "flex",
     flexWrap: "wrap",
     justifyContent: "space-around"
   },
-  selection:{
+  selection: {
     position: "relative",
     backgroundColor: "#624C4C",
     borderRadius: "10px",
     padding: "0 0.7rem",
     marginTop: "1rem"
-  
+
   },
-  closeIcon:{
+  closeIcon: {
+    fontSize: "25px",
     position: "absolute",
+    color: "red",
     top: "-5px",
     right: "-5px",
-    fontSize: "15px",
-    backgroundColor: "red",
-    borderRadius: "50%",
-    "&:hover":{
-      cursor: "pointer",
-      fontSize: "17px"
+    "&:hover": {
+      cursor: "pointer"
     }
   },
-  formData:{
+  formData: {
     width: "100%",
     minWidth: "20rem",
     maxWidth: "30rem",
     padding: " 0.5rem 1rem"
 
   },
-  galeryContainer:{
+  galeryContainer: {
     boxSizing: "border-box",
     position: "relative",
     display: "flex",
@@ -144,13 +141,14 @@ const styles = makeStyles({
   }
 })
 
-function CiudadConfig() {
+function EstablecimientoConfig() {
   const mailRegExp = /^[-\w.%+]{1,64}@(?:[A-Z0-9-]{1,63}\.){1,125}[A-Z]{2,63}$/i;
   const phoneRegexp = /^[0-9]{10}$/;
   const classes = styles();
-  const location = useLocation();
-  const navigate = useNavigate();
+
   const [maxImages, setMaxImages]=useState(5);
+
+  const navigate = useNavigate();
   const [loaders, setLoaders] = useState({
     galeria: false,
     representativa: false,
@@ -158,67 +156,60 @@ function CiudadConfig() {
     body: true,
   })
   const [fotos, setFotos] = useState([]);
-  const { ciudad } = location.state;
+  const [ciudades, setCiudades] = useState([{ ID: 0, CIUDAD: "NO CITY" }]);
   const [enableInputs, setEnableInputs] = useState({
-    "ciudad": true,
-    "municipio": true,
-    "region": true,
+    "nombre": true,
+    "tipoEstablecimiento": true,
     "telefono": true,
     "correo": true,
-    "magico": true,
-    "tipos": true,
-    "emergencias": true,
+    "paginaWeb": true,
+    "tiposPago": true,
     "descripcion": true,
+    "ciudad": true,
+    "colonia": true,
+    "numero": true,
+    "cp": true,
+    "calle": true
   });
   const [datos, setDatos] = useState({
-    "ciudad": '',
-    "municipio": '',
-    "region": '',
-    "telefono": '',
-    "correo": '',
-    "magico": '',
-    "emergencias": '',
-    "descripcion": '',
+    "establecimiento": cookie.get('establecimientoId'),
+    "nombre": "",
+    "tipoEstablecimiento": "NT",
+    "telefono": "",
+    "correo": "",
+    "paginaWeb": "",
+    "tiposPago": "",
+    "descripcion": "",
+    "ciudad": "0",
+    "colonia": "",
+    "numero": "",
+    "cp": "",
+    "calle": "",
     "foto": null,
-    'tipos': ["NT"],
     "correoOK": true,
     'telefonoOK': true,
-    'emergenciasOK': true
   });
 
-  const castTipos = (cad_tipos) => {
-    var arreglo = [];
-    for (let i = 0; i < cad_tipos.length / 2; i++) {
-      console.log(cad_tipos.substring(i * 2, (i * 2) + 2))
-      arreglo.push(cad_tipos.substring(i * 2, (i * 2) + 2));
-    }
-    return arreglo;
-  }
-  const uncastTipos = () => {
-    var cad = "";
-    datos.tipos.forEach(element => {
-      cad += element;
-    });
-    console.log(cad)
-    return cad;
-  }
 
   const submitData = () => {
-    console.log(typeof (cookie.get('ciudadId')))
-    if (cookie.get('ciudadId') === "null") {
-      axios.post("http://localhost:5000/admin_ciudad/ciudad", {
+    if (cookie.get('establecimientoId') == "null") {
+      axios.post(`${endpoint}/establecimiento`, {
         data: {
           username: cookie.get('username'),
           pass: cookie.get('password'),
-          ciudad: datos.ciudad,
-          region: datos.region,
-          municipio: datos.municipio,
+          nombre: datos.nombre,
           correo: datos.correo,
           telefono: datos.telefono,
-          magico: datos.magico,
-          tipos: uncastTipos(),
-          emergencias: datos.emergencias,
+          tipo: datos.tipoEstablecimiento,
+          ciudad: datos.ciudad,
+          colonia: datos.colonia,
+          numero: datos.numero,
+          cp: datos.cp,
+          calle: datos.calle,
+          pagina: datos.paginaWeb,
+          maps: "",
           descripcion: datos.descripcion
+
         }
       }).then(res => {
         const data = res.data;
@@ -227,27 +218,27 @@ function CiudadConfig() {
           alert("Ha ocurrido un error al intentar actualizar")
         } else {
           console.log(data)
-          if (data[0].existencia) { alert("Tu ya administrar una ciudad"); navigate('/ciudad/inicio') }
-          else {
-            cookie.set('ciudadId', data[0][0].ID, { path: '/' })
-            alert("Proceso exitoso");
-            navigate('/ciudad/inicio')
-          }
+          cookie.set('establecimientoId', data[0].ID, { path: '/' })
+          alert("Proceso exitoso");
+          navigate('/establecimiento/inicio')
+
         }
       }).catch(err => {
         console.log(err.message)
         alert("Ha ocurrido un error")
       })
     } else {
-      axios.put("http://localhost:5000/admin_ciudad/ciudad", {
+      axios.put(`${endpoint}/establecimiento`, {
         data: {
           username: cookie.get('username'),
           pass: cookie.get('password'),
+          establecimiento: cookie.get('establecimientoId'),
+          nombre: datos.nombre,
           correo: datos.correo,
           telefono: datos.telefono,
-          magico: datos.magico,
-          tipos: "AV",
-          emergencias: datos.emergencias,
+          tipo: datos.tipoEstablecimiento,
+          pagina: datos.paginaWeb,
+          maps: "",
           descripcion: datos.descripcion
         }
       }).then(res => {
@@ -258,7 +249,7 @@ function CiudadConfig() {
         } else {
           console.log(data)
           alert("Proceso exitoso");
-          navigate('/ciudad/inicio')
+          navigate('/establecimiento/inicio')
         }
 
       }).catch(err => {
@@ -275,43 +266,24 @@ function CiudadConfig() {
   }
 
   const handleOnChangeInput = (prop) => (evt) => {
-    if (prop === "correo") setDatos({
+    if (prop == "correo") setDatos({
       ...datos,
       [prop]: evt.target.value, correoOK: mailRegExp.test(evt.target.value)
     })
-    else if (prop === 'telefono') setDatos({
+    else if (prop == 'telefono') setDatos({
       ...datos,
       [prop]: evt.target.value, telefonoOK: phoneRegexp.test(evt.target.value)
     })
-    else if (prop === 'emergencias') setDatos({
-      ...datos,
-      [prop]: evt.target.value, emergenciasOK: phoneRegexp.test(evt.target.value)
-    })
-    else if (prop === 'tipos') {
-      if(datos.tipos.find( tipo => tipo === evt.target.value)) return;
-      if(datos.tipos.find( tipo => tipo === "NT"))  setDatos({ ...datos, [prop]: [evt.target.value] })
-      else setDatos({ ...datos, [prop]: [...datos.tipos,evt.target.value] })
-    }
     else setDatos({ ...datos, [prop]: evt.target.value })
   }
-  const handleDeleteTipo = (prop) => {
-    const newTipos = datos.tipos;
-    newTipos.pop(prop); 
-    if(newTipos.length==0) newTipos.push("NT");
-    setDatos({...datos,tipos: newTipos});
-  }
+
   const handleSubmitImage = e => {
     e.preventDefault();
-    
+    if (datos.establecimiento == 'null') {
+      alert('Primero crea tu establecimiento!');
+      return;
+    }
     //agregar algun efecto de carga
-    if(ciudad=='null'){
-      alert("Primero crea el establecimiento por favor!");
-      return;
-    }
-    if(datos.pro){
-      alert("No pudes subir una nueva imagen, ya que el establecimiento ya cuenta con un administrador!");
-      return;
-    }
     const form = document.getElementById('form');
     const input_image = document.getElementById('input_image');
     if (input_image.value == '') { alert('Por favor carga una imagen!'); return; }
@@ -321,51 +293,46 @@ function CiudadConfig() {
       const confirmation = window.confirm("Estas a punto de eliminar la imagen actual para subir una nueva!")
       if (!confirmation) return;
     }
-    axios.post('http://localhost:5000/images/uploadRepresentativaCiudad', formData, {
+    axios.post('http://localhost:5000/images/uploadRepresentativaEstablecimiento', formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       }
     }).then((res) => {
-      const data = res.data;
-      console.log(data);
-      setDatos({ ...datos, foto: data.id });
-      axios.post('http://localhost:5000/admin_ciudad/subirRepresentativa',{
-        data:{
+      const returned = res.data;
+      console.log(returned);
+      setDatos({ ...datos, foto: returned.id });
+
+      axios.post('http://localhost:5000/admin_establecimiento/subirRepresentativa', {
+        data: {
           username: cookie.get('username'),
           pass: cookie.get('password'),
-          foto: data.id
+          foto: returned.id,
+          establecimiento: cookie.get('establecimientoId')
         }
-      }).then(res => {
+      }).then(resp => {
+        if (resp.data.error) {
+          alert(resp.data.error);
+          return
+        }
         console.log("Imagen actualizada");
-        console.log(res.data)
-      alert("Imagen subida exitosamente!");
+        console.log(resp.data)
       }).catch(err => {
         console.log("Un error a ocurrido: ", err.message);
-        
-      alert("Imagen subida exitosamente! Por favor de click en ACEPTAR debajo del formulario");
         return;
       });
       if (imageId != null) {
-        axios.delete('http://localhost:5000/images/imagen', {
-          data: {
-            fileId: imageId
-          }
-        }).then(res => {
-          console.log("Imagen anterior eliminada")
-        }).catch(err => {
-          console.log("Un error a ocurrido: ", err.message);
-          return;
-        });
+        handleDeleteImage(imageId)
       }
     })
       .catch((err) => {
         console.log(err);
       });
   }
+
   const handleSubmitMultipleImages = e => {
     e.preventDefault();
-    if(ciudad=='null'){
-      alert("Primero crea el establecimiento por favor!");
+    if (datos.establecimiento == 'null') {
+      alert('Primero crea tu establecimiento!');
       return;
     }
     setLoaders({...loaders,galeria: true})
@@ -385,7 +352,7 @@ function CiudadConfig() {
     }
     const form = document.getElementById('multiple_form');
     const formData = new FormData(form);
-    axios.post('http://localhost:5000/images/uploadCityPhotos', formData, {
+    axios.post('http://localhost:5000/images/uploadEstablishmentPhotos', formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       }
@@ -406,7 +373,7 @@ function CiudadConfig() {
       });
       setFotos([...fotos,...aux_fotos])
 
-      axios.post(`${endpoint}/insertarFotos`, {
+      axios.post('http://localhost:5000/admin_establecimiento/insertarFotos', {
         data: {
           username: cookie.get('username'),
           pass: cookie.get('password'),
@@ -450,57 +417,67 @@ function CiudadConfig() {
           return;
         });
   }
-  useEffect(()=>{
-    if(ciudad=='null') return;
-    axios.get(`http://localhost:5000/no_users/lugares/${ciudad}`)
-            .then(res => {
-                const data = res.data;
-                console.log(data)
-                setDatos({...datos,
-                    nombre: data.NOMBRE,
-                    region: data.REGION,
-                    municipio: data.MUNICIPIO,
-                    correo: data.CORREO,
-                    telefono: data.TELEFONO,
-                    magico: data.MAGICO,
-                    tipos: castTipos(data.TIPOS),
-                    emergencias: data.EMERGENCIAS,
-                    calificacion: data.CALIFICACION,
-                    descripcion: data.DESCRIPCION,
-                    foto: data.FOTO
-                })
-            }).catch(err=>{
-                console.log("Error: ",err.message);
-                alert("Ha ocurrido un error al intentar obtener los datos de la ciudad administrada. ¡Por favor recargue la pagina!")
-            });
-            axios.get('http://localhost:5000/no_users/galeria',{
-              params:{
-                id: ciudad,
-                tipo: "CIUDAD"
-              }
-            }).then(res => {
-              const data = res.data;
-              if(data.error){
-                console.log(data.error);
-                alert(data.error);
-                return;
-              }
-              console.log(data)
-              setMaxImages(maxImages-data.length);
-              setFotos([...data]);
-            }).catch(err => {
-              console.log("Error: ", err.message);
-              alert("Ha ocurrido un error al intentar obtener los datos de la ciudad administrada. ¡Por favor recargue la pagina!")
-            })
-  },[]);
+  useEffect(() => {
+    if (datos.establecimiento == 'null') {
+      axios.get('http://localhost:5000/no_users/listarCiudades').then(
+        res => {
+          const data = res.data;
+          setCiudades([...data])
+        }
+      ).catch(err => {
+        console.log(err.message)
+      });
+      return
+    }
+
+    axios.get(`http://localhost:5000/no_users/establecimientos/${cookie.get('establecimientoId')}/0`)
+      .then(res => {
+        const data = res.data;
+        console.log(data)
+        setDatos({
+          ...datos,
+          nombre: data.NOMBRE,
+          correo: data.CORREO,
+          telefono: data.TELEFONO,
+          tipoEstablecimiento: data.TIPO,
+          descripcion: data.DESCRIPCION,
+          foto: data.FOTO,
+          paginaWeb: data.WEB
+        })
+      }).catch(err => {
+        console.log("Error: ", err.message);
+        alert("Ha ocurrido un error al intentar obtener los datos de la ciudad administrada. ¡Por favor recargue la pagina!")
+      });
+    axios.get('http://localhost:5000/no_users/galeria',{
+      params:{
+        id: datos.establecimiento,
+        tipo: "ESTABLECIMIENTO"
+      }
+    }).then(res => {
+      const data = res.data;
+      if(data.error){
+        console.log(data.error);
+        alert(data.error);
+        return;
+      }
+      console.log(data)
+      setMaxImages(maxImages-data.length);
+      setFotos([...data]);
+    }).catch(err => {
+      console.log("Error: ", err.message);
+      alert("Ha ocurrido un error al intentar obtener los datos de la ciudad administrada. ¡Por favor recargue la pagina!")
+    })
+  }, []);
+
   return (
     <div className='container'>
       <div className='wrapper'>
-        <h1 className='title'>DATOS DE CIUDAD</h1>
+        <h1 className='title'>DATOS DE ESTABLECIMIENTO</h1>
         <div className={classes.galeryContainer}>
-        {
-             loaders.galeria?
-             <img src={logoReact} className='App-logo' style={{width: "150px"}}/>:
+
+          {
+            loaders.galeria?
+            <img src={logoReact} className='App-logo' style={{width: "150px"}}/>:
             (
               fotos.length==0?
             <div>
@@ -544,102 +521,52 @@ function CiudadConfig() {
             )
             )
           }
-          <form onSubmit={handleSubmitMultipleImages} style={{width: "100%"}} id='multiple_form' encType='multipart/form-data' method='post' className={classes.userImage}>
-            <input multiple type='file' name='images' id='images' style={{width: "auto"}}/>
+
+          <form onSubmit={handleSubmitMultipleImages} id='multiple_form' style={{ width: "100%" }} encType='multipart/form-data' method='post' className={classes.userImage}>
+            <input multiple type='file' id='images' name='images' style={{ width: "auto" }} />
             <input type='text' name='username' value={cookie.get('username')} hidden />
             <input type='text' name='pass' value={cookie.get('password')} hidden />
-            <input type='submit' className='boton' value='CAMBIAR FOTOS' />
+            <input type='submit' className='boton' value='CAMBIAR FOTOS'/>
           </form>
-         
+
         </div>
         <div className={classes.userImage}>
-          
-          
-          <div className={classes.imageContainer} style={datos.foto==null?{
+
+
+          <div className={classes.imageContainer} style={datos.foto == null ? {
             backgroundColor: "greenyellow"
-          }:{
+          } : {
             backgroundImage: `url("https://drive.google.com/uc?id=${datos.foto}")`,
-            
+
             backgroundPosition: "0 0 ",
             backgroundSize: "cover",
             backgroundRepeat: "no-repeat"
           }}>
-            </div>
+          </div>
           <form onSubmit={handleSubmitImage} id='form' encType='multipart/form-data' method='post' className={classes.userImage}>
-            <input type='file' name='image' id='input_image' style={{width: "100%"}}/>
+            <input type='file' name='image' id='input_image' style={{ width: "100%" }} />
             <input type='text' name='username' value={cookie.get('username')} hidden />
             <input type='text' name='pass' value={cookie.get('password')} hidden />
             <input type='submit' className='boton' value='SUBIR' />
           </form>
         </div>
         <div className={classes.formData}>
-          {cookie.get('ciudadId') === "null" ? (
-            <div className={classes.input}>
-              <AccountCircleIcon className={classes.iconInput} />
-              <CssTextField
-                value={datos.ciudad}
-                onChange={handleOnChangeInput('ciudad')}
-                disabled={enableInputs.ciudad}
-                className={classes.margin}
-                style={{ margin: " auto 1.5rem ", width: "90%", paddingTop: "0.5rem" }}
-                id="custom-css-standard-input"
-                label="CIUDAD" />
-              <FormControlLabel
-                control={<CstSwitch name="checkedB" onClick={() => handleEnableInputs("ciudad")} />}
-                label="Editar"
-                className={classes.switch}
-              />
-            </div>
-          ) : <></>}
-          {cookie.get('ciudadId') === "null" ? (
-            <div className={classes.input}>
-              <AccountCircleIcon className={classes.iconInput} />
-              <CssTextField
-                value={datos.municipio}
-                onChange={handleOnChangeInput('municipio')}
-                disabled={enableInputs.municipio}
-                className={classes.margin}
-                style={{ margin: " auto 1.5rem ", width: "90%", paddingTop: "0.5rem" }}
-                id="custom-css-standard-input"
-                label="MUNICIPIO" />
-              <FormControlLabel
-                control={<CstSwitch name="checkedB" onClick={() => handleEnableInputs("municipio")} />}
-                label="Editar"
-                className={classes.switch}
-              />
-            </div>
-          ) : <></>}
-          {cookie.get('ciudadId') === "null" ? (
-            <div className={classes.input}>
-              <AccountCircleIcon className={classes.iconInput} />
-              <FormControlLabel
-                control={<CstSwitch name="checkedB" onClick={() => handleEnableInputs("region")} />}
-                label="Editar"
-                className={classes.switch}
-              />
-              <FormControl className={classes.formControl}>
-                <InputLabel style={{ color: "white" }}>REGION</InputLabel>
-                <NativeSelect
-                  id='userType'
-                  value={datos.region}
-                  onChange={handleOnChangeInput('region')}
-                  disabled={enableInputs.region}
-                  style={{color: "white", backgroundColor: "#ffffff45", borderRadius: "5px", paddingLeft: "0.5rem", width: "90%", paddingTop: "0.5rem" }}>
-                  <option style={{ backgroundColor: "black" }}>Elegir</option>
-                  <option style={{ backgroundColor: "black" }} value="CN">CAÑADA</option>
-                  <option style={{ backgroundColor: "black" }} value="CT">COSTA</option>
-                  <option style={{ backgroundColor: "black" }} value="IT">ITSMO</option>
-                  <option style={{ backgroundColor: "black" }} value="MX">MIXTECA</option>
-                  <option style={{ backgroundColor: "black" }} value="PP">PAPALOAPAN</option>
-                  <option style={{ backgroundColor: "black" }} value="SS">SIERRA SUR</option>
-                  <option style={{ backgroundColor: "black" }} value="SN">SIERRA NORTE</option>
-                  <option style={{ backgroundColor: "black" }} value="VC">VALLES CENTRALES</option>
-
-                </NativeSelect>
-
-              </FormControl>
-            </div>
-          ) : <></>}
+          <div className={classes.input}>
+            <AccountCircleIcon className={classes.iconInput} />
+            <CssTextField
+              value={datos.nombre}
+              onChange={handleOnChangeInput('nombre')}
+              disabled={enableInputs.nombre}
+              className={classes.margin}
+              style={{ margin: " auto 1.5rem ", width: "90%", paddingTop: "0.5rem" }}
+              id="custom-css-standard-input"
+              label="NOMBRE" />
+            <FormControlLabel
+              control={<CstSwitch name="checkedB" onClick={() => handleEnableInputs("nombre")} />}
+              label="Editar"
+              className={classes.switch}
+            />
+          </div>
           <div className={classes.input}>
             <AccountCircleIcon className={classes.iconInput} />
             <CssTextField
@@ -648,7 +575,8 @@ function CiudadConfig() {
               disabled={enableInputs.telefono}
               className={classes.margin}
               style={{ margin: " auto 1.5rem ", width: "90%", paddingTop: "0.5rem" }}
-              id="custom-css-standard-input" label="TELEFONO" />
+              id="custom-css-standard-input"
+              label="TELEFONO" />
             <FormControlLabel
               control={<CstSwitch name="checkedB" onClick={() => handleEnableInputs("telefono")} />}
               label="Editar"
@@ -656,7 +584,7 @@ function CiudadConfig() {
             />
             <FormHelperText
               style={{ color: "#992254", paddingLeft: "1.5rem", fontSize: "0.8rem", fontWeight: "bold" }}>
-              {datos.telefonoOK ? '' : 'Numero telefonico invalido'}
+              {datos.telefonoOK ? '' : 'Formato de numero telefonico invalido'}
             </FormHelperText>
           </div>
           <div className={classes.input}>
@@ -666,8 +594,9 @@ function CiudadConfig() {
               onChange={handleOnChangeInput('correo')}
               disabled={enableInputs.correo}
               className={classes.margin}
-              style={{ margin: " auto 1.5rem ", width:"90%", paddingTop: "0.5rem" }}
-              id="custom-css-standard-input" label="CORREO" />
+              style={{ margin: " auto 1.5rem ", width: "90%", paddingTop: "0.5rem" }}
+              id="custom-css-standard-input"
+              label="CORREO" />
             <FormControlLabel
               control={<CstSwitch name="checkedB" onClick={() => handleEnableInputs("correo")} />}
               label="Editar"
@@ -675,96 +604,59 @@ function CiudadConfig() {
             />
             <FormHelperText
               style={{ color: "#992254", paddingLeft: "1.5rem", fontSize: "0.8rem", fontWeight: "bold" }}>
-              {datos.correoOK ? '' : 'Direccion de correo invalido'}
+              {datos.correoOK ? '' : 'Correo invalido'}
             </FormHelperText>
           </div>
           <div className={classes.input}>
             <AccountCircleIcon className={classes.iconInput} />
             <FormControlLabel
-              control={<CstSwitch name="checkedB" onClick={() => handleEnableInputs("magico")} />}
+              control={<CstSwitch name="checkedB" onClick={() => handleEnableInputs("tipoEstablecimiento")} />}
               label="Editar"
               className={classes.switch}
             />
             <FormControl className={classes.formControl}>
-              <InputLabel style={{ color: "white" }}>MAGICO</InputLabel>
+              <InputLabel style={{ color: "white" }}>TIPO ESTABLECIMIENTO</InputLabel>
               <NativeSelect
                 id='userType'
-                value={datos.magico}
-                onChange={handleOnChangeInput('magico')}
-                disabled={enableInputs.magico}
+                value={datos.tipoEstablecimiento}
+                onChange={handleOnChangeInput('tipoEstablecimiento')}
+                disabled={enableInputs.tipoEstablecimiento}
                 style={{ color: "white", backgroundColor: "#ffffff45", borderRadius: "5px", paddingLeft: "0.5rem", width: "90%", paddingTop: "0.5rem" }}>
-                <option style={{ backgroundColor: "black" }} value={1}>SI</option>
-                <option style={{ backgroundColor: "black" }} value={0}>NO</option>
+                <option style={{ backgroundColor: "black" }}>Elegir</option>
+                <option style={{ backgroundColor: "black" }} value="AB">{tipoEstablecimento.AB}</option>
+                <option style={{ backgroundColor: "black" }} value="BN">{tipoEstablecimento.BN}</option>
+                <option style={{ backgroundColor: "black" }} value="GB">{tipoEstablecimento.GB}</option>
+                <option style={{ backgroundColor: "black" }} value="HT">{tipoEstablecimento.HT}</option>
+                <option style={{ backgroundColor: "black" }} value="MR">{tipoEstablecimento.MR}</option>
+                <option style={{ backgroundColor: "black" }} value="NT">{tipoEstablecimento.NT}</option>
+                <option style={{ backgroundColor: "black" }} value="RS">{tipoEstablecimento.RS}</option>
+                <option style={{ backgroundColor: "black" }} value="SP">{tipoEstablecimento.SP}</option>
+                <option style={{ backgroundColor: "black" }} value="TR">{tipoEstablecimento.TR}</option>
 
               </NativeSelect>
 
             </FormControl>
           </div>
-          
-          <div className={classes.input}>
-            <AccountCircleIcon className={classes.iconInput} />
-            <FormControlLabel
-              control={<CstSwitch name="checkedB" onClick={() => handleEnableInputs("tipos")} />}
-              label="Editar"
-              className={classes.switch}
-            />
-            <FormControl className={classes.formControl}>
-              <InputLabel required style={{ color: "white" }}>TIPOS DE TURISMO</InputLabel>
-              <NativeSelect
-                id='userType'
-                multiple
-                value={datos.tipos[datos.tipos.length-1]}
-                onChange={handleOnChangeInput('tipos')}
-                disabled={enableInputs.tipos}
-                style={{ color: "white", backgroundColor: "#ffffff45", borderRadius: "5px", paddingLeft: "0.5rem", width: "90%", paddingTop: "0.5rem" }}>
-                <option style={{ backgroundColor: "black" }} value="NT">NO HAY TIPO</option>
-                <option style={{ backgroundColor: "black" }} value="AV">AVENTURA</option>
-                <option style={{ backgroundColor: "black" }} value="DP">DEPORTE</option>
-                <option style={{ backgroundColor: "black" }} value="NG">NEGOCIOS</option>
-                <option style={{ backgroundColor: "black" }} value="CL">CULTURAL</option>
-                <option style={{ backgroundColor: "black" }} value="GS">GASTRONOMICO</option>
-                <option style={{ backgroundColor: "black" }} value="AQ">ARQUEOLICO</option>
-                <option style={{ backgroundColor: "black" }} value="SL">SALUD</option>
-                <option style={{ backgroundColor: "black" }} value="RL">RURAL</option>
-                <option style={{ backgroundColor: "black" }} value="EC">ECOLOGICO</option>
-                <option style={{ backgroundColor: "black" }} value="ES">ESPIRITUAL</option>
-
-              </NativeSelect>
-              
-            </FormControl>
-            <div className={classes.containerSelection}>
-              {datos.tipos.map( tipo => {
-                return (
-                <div className={classes.selection}>
-                  <span>{tiposTurismo[tipo]}</span>
-                  <CancelIcon className={classes.closeIcon} onClick={()=> handleDeleteTipo(tipo)}/>
-                </div>
-                )
-              }
-              )
-              }
-            </div>
-          </div>
-
           <div className={classes.input}>
             <AccountCircleIcon className={classes.iconInput} />
             <CssTextField
-              value={datos.emergencias}
-              onChange={handleOnChangeInput('emergencias')}
-              disabled={enableInputs.emergencias}
+              value={datos.paginaWeb}
+              onChange={handleOnChangeInput('paginaWeb')}
+              disabled={enableInputs.paginaWeb}
               className={classes.margin}
               style={{ margin: " auto 1.5rem ", width: "90%", paddingTop: "0.5rem" }}
-              id="custom-css-standard-input" label="EMERGENCIAS" />
+              id="custom-css-standard-input" label="PAGINA WEB" />
             <FormControlLabel
-              control={<CstSwitch name="checkedB" onClick={() => handleEnableInputs("emergencias")} />}
+              control={<CstSwitch name="checkedB" onClick={() => handleEnableInputs("paginaWeb")} />}
               label="Editar"
               className={classes.switch}
             />
             <FormHelperText
               style={{ color: "#992254", paddingLeft: "1.5rem", fontSize: "0.8rem", fontWeight: "bold" }}>
-              {datos.emergenciasOK ? '' : 'Numero telefonico invalido'}
+              {datos.telefonoOK ? '' : 'Numero telefonico invalido'}
             </FormHelperText>
           </div>
+
           <div className={classes.input}>
             <AccountCircleIcon className={classes.iconInput} />
             <CssTextField
@@ -781,12 +673,99 @@ function CiudadConfig() {
               className={classes.switch}
             />
           </div>
+          {(datos.establecimiento == 'null') ? (
+            <>
+              <div className={classes.input}>
+                <AccountCircleIcon className={classes.iconInput} />
+                <FormControlLabel
+                  control={<CstSwitch name="checkedB" onClick={() => handleEnableInputs("ciudad")} />}
+                  label="Editar"
+                  className={classes.switch}
+                />
+                <FormControl className={classes.formControl}>
+                  <InputLabel style={{ color: "white" }}>CIUDAD: </InputLabel>
+                  <NativeSelect
+                    id='ciudad'
+                    value={datos.ciudad}
+                    onChange={handleOnChangeInput('ciudad')}
+                    disabled={enableInputs.ciudad}
+                    style={{ color: "white", backgroundColor: "#ffffff45", borderRadius: "5px", paddingLeft: "0.5rem", width: "90%", paddingTop: "0.5rem" }}>
+                    <option style={{ backgroundColor: "black" }} value='0'>Elegir</option>
+                    {ciudades.map(ciudad => {
+                      return <option key={ciudad.ID} style={{ backgroundColor: "black" }} value={ciudad.ID}>{ciudad.CIUDAD}</option>
+                    })}
+
+                  </NativeSelect>
+
+                </FormControl>
+              </div>
+              <div className={classes.input}>
+                <AccountCircleIcon className={classes.iconInput} />
+                <CssTextField
+                  value={datos.colonia}
+                  onChange={handleOnChangeInput('colonia')}
+                  disabled={enableInputs.colonia}
+                  className={classes.margin}
+                  style={{ margin: " auto 1.5rem ", width: "90%", paddingTop: "0.5rem" }}
+                  id="custom-css-standard-input" label="COLONIA" />
+                <FormControlLabel
+                  control={<CstSwitch name="checkedB" onClick={() => handleEnableInputs("colonia")} />}
+                  label="Editar"
+                  className={classes.switch}
+                />
+              </div>
+              <div className={classes.input}>
+                <AccountCircleIcon className={classes.iconInput} />
+                <CssTextField
+                  value={datos.calle}
+                  onChange={handleOnChangeInput('calle')}
+                  disabled={enableInputs.calle}
+                  className={classes.margin}
+                  style={{ margin: " auto 1.5rem ", width: "90%", paddingTop: "0.5rem" }}
+                  id="custom-css-standard-input" label="CALLE" />
+                <FormControlLabel
+                  control={<CstSwitch name="checkedB" onClick={() => handleEnableInputs("calle")} />}
+                  label="Editar"
+                  className={classes.switch}
+                />
+              </div>
+              <div className={classes.input}>
+                <AccountCircleIcon className={classes.iconInput} />
+                <CssTextField
+                  value={datos.numero}
+                  onChange={handleOnChangeInput('numero')}
+                  disabled={enableInputs.numero}
+                  className={classes.margin}
+                  style={{ margin: " auto 1.5rem ", width: "90%", paddingTop: "0.5rem" }}
+                  id="custom-css-standard-input" label="NUMERO" />
+                <FormControlLabel
+                  control={<CstSwitch name="checkedB" onClick={() => handleEnableInputs("numero")} />}
+                  label="Editar"
+                  className={classes.switch}
+                />
+              </div>
+              <div className={classes.input}>
+                <AccountCircleIcon className={classes.iconInput} />
+                <CssTextField
+                  value={datos.cp}
+                  onChange={handleOnChangeInput('cp')}
+                  disabled={enableInputs.cp}
+                  className={classes.margin}
+                  style={{ margin: " auto 1.5rem ", width: "90%", paddingTop: "0.5rem" }}
+                  id="custom-css-standard-input" label="CODIGO POSTAL" />
+                <FormControlLabel
+                  control={<CstSwitch name="checkedB" onClick={() => handleEnableInputs("cp")} />}
+                  label="Editar"
+                  className={classes.switch}
+                />
+              </div>
+            </>) : false}
         </div>
-        
+
         <button className={"boton " + classes.boton} onClick={submitData}>ACEPTAR</button>
       </div>
     </div>
   )
 }
 
-export default CiudadConfig;
+export default EstablecimientoConfig;

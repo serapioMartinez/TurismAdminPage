@@ -82,7 +82,6 @@ export default function Login() {
   const handleIniciarSesion = () => {
     let url = "";
     let endpoint="";
-    console.log(datos);
     if (datos.passOk && datos.userOK) {
       setDatos({ ...datos, isLoading: true });
       if (datos.userType === "CIUDAD"){
@@ -101,7 +100,6 @@ export default function Login() {
           },
 
         }).then(res => {
-          console.log(res.data)
           setDatos({ ...datos, isLoading: false })
           if(res.data.error) {
             alert(res.data.error);
@@ -219,7 +217,7 @@ export default function Login() {
         </> : <img src={logoReact} className='App-logo' />}
       </div>
       <div style={{ textAlign: "center", color: "#4302AB", fontWeight: "bold" }}>
-        <span>¿Olvidaste tu contraseña?</span>
+        {/*<span>¿Olvidaste tu contraseña?</span>*/}
         <p style={{ color: "white" }}>¿No tienes una cuenta? - <span style={{ color: "#4302AB" }} onClick={() => navigate('/registro')}>Crear cuenta</span></p>
       </div>
       <button className='boton' style={{ width: "50%", margin: "0.5rem auto" }}

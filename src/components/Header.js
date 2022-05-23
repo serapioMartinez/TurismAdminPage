@@ -79,13 +79,15 @@ export default function Header(){
     }
     const handleCloseSession = () => {
         console.log("Cerrando sesion")
-        cookies.remove('username');
-        cookies.remove('password');
-        cookies.remove('userId');
-        if(cookies.get('userType')=="CIUDAD") cookies.remove('ciudadId');
-        else cookies.remove('establecimientoId');
-        cookies.remove('userType');
-        navigate('/');
+        console.log(cookies.getAll())
+        cookies.remove('username',{ path: '/' });
+        cookies.remove('password',{ path: '/' });
+        cookies.remove('userId',{ path: '/' });
+        if(cookies.get('userType')=="CIUDAD") cookies.remove('ciudadId',{ path: '/' });
+        else cookies.remove('establecimientoId',{ path: '/' });
+        cookies.remove('userType',{ path: '/' });
+        const all = cookies.getAll();
+        if(!all.username) navigate('/');
     }
     return (
         <div className={classes.wrapper}>

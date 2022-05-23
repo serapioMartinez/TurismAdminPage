@@ -51,7 +51,7 @@ export default function ItemSelector(props) {
                 <CreateOutlinedIcon className={classes.icon} onClick={() => {
                 console.log(props)
                 navigate(`${props.id}`)}}/>
-            <DeleteOutlineOutlinedIcon className={classes.icon} onClick={() => navigate(`0`) }/>
+            <DeleteOutlineOutlinedIcon className={classes.icon} onClick={() => props.delete(props.id)}/>
         
             </>):<AddBoxIcon className={classes.icon} onClick={() => navigate(`0`) }/>}
         </div>

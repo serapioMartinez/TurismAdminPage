@@ -72,17 +72,14 @@ export default function ItemInfo(props) {
                 case "notas": url += `items/${cookie.get('ciudadId')}/${props.type.toUpperCase()}`; break;
                 case "atencion": url+=`horario_atencion/${cookie.get('establecimientoId')}`; break;
                 case "direcciones": url+=`direcciones/${cookie.get('establecimientoId')}`; break;
+                case "transporte": url+=`salidas/${cookie.get('establecimientoId')}`; break;
             }
             setTimeout(()=>{
                 axios.get(url).then(res => {
                     let newItems = [];
-                    console.log(res.data)
                     res.data.forEach(element => {
-                        console.log(element)
-                        console.log(typeof (element))
                         newItems.push(element);
                     });
-                    console.log(newItems)
                     setItems([...newItems]);
                 }).catch(err => {
                     console.log("Error: " + err.message)
@@ -91,7 +88,6 @@ export default function ItemInfo(props) {
         }
     }, [props.status]);
     useEffect(()=>{
-        console.log(items);
         setPrint(true);
         props.action(props.next);
     },[items])
@@ -104,8 +100,19 @@ export default function ItemInfo(props) {
                     <ul className={classes.listaItems}>
                         {
                             print?(
-                                items.map(({ID, NOMBRE}) => {
-                                    return <Link key={ID} className={classes.itemList} to={`/ciudad/${props.type}/${ID}`}><li id={ID}>{ID} - {NOMBRE.toUpperCase()}</li></Link>
+                                items.map(item => {
+                                    if(item.NOMBRE) return <Link key={item.ID} className={classes.itemList} to={`${(cookie.get('userType')=="CIUDAD")?"/ciudad/" :"/establecimiento/"}${props.type}/${item.ID}`}><li id={item.ID}>{item.ID} - {item.NOMBRE.toUpperCase()}</li></Link>
+                                    else return (
+                                        <>
+                                        <li>LUNES: {item.LUNES}</li>
+                                        <li>MARTES: {item.MARTES}</li>
+                                        <li>MIERCOLES: {item.MIERCOLES}</li>
+                                        <li>JUEVES: {item.JUEVES}</li>
+                                        <li>VIERNES: {item.VIERNES}</li>
+                                        <li>SABADO: {item.SABADO}</li>
+                                        <li>DOMINGO: {item.DOMINGO}</li>
+                                        </>
+                                    );
                                 })
                             ): (<li>{"<<NOMBRE DEL ITEM>>"}</li>)
                         }
@@ -113,7 +120,7 @@ export default function ItemInfo(props) {
                     </ul>
                 </div>
                 <div>
-                    <Link to={"/ciudad/" + props.type}><button className={"boton " + classes.boton}>EDITAR</button></Link>
+                    <Link to={(cookie.get('userType')=="CIUDAD")?"/ciudad/"+ props.type :"/establecimiento/"+ props.type}><button disabled={cookie.get('establecimientoId')=='null'} className={"boton " + classes.boton}>EDITAR</button></Link>
                 </div>
             </div>
         </div>

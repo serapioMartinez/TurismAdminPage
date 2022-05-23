@@ -30,21 +30,14 @@ function SideBarCiudad() {
     const clave = window.location.href.split('/').at(-1);
     console.log(clave)
     const [menuCollapse, setMenuCollapse] = useState(false);
-    const [activeMenuItems, setActiveMenuItems] = useState({
-        "inicio": (clave=="inicio")?true:false,
-        "platillos": (clave=="platillos")?true:false,
-        "personajes": (clave=="personajes")?true:false,
-        "festividades": (clave=="festividades")?true:false,
-        "notas": (clave=="notas")?true:false,
-        "zonas": (clave=="zonas")?true:false,
-        "reseñas": (clave=="reseñas")?true:false,
-    });
+    const [activeMenuItem, setActiveMenuItem] = useState("inicio");
     const menuIconClick = () => {
         menuCollapse ? setMenuCollapse(false) : setMenuCollapse(true);
     }
     const setActivate = item => {
         console.log(item);
-        if (activeMenuItems[item]) return;
+        if (activeMenuItem==item) return;
+        setActiveMenuItem(item);
         switch(item){
             case "inicio": 
             case "platillos": 
@@ -67,22 +60,22 @@ function SideBarCiudad() {
                     </SidebarHeader>
                     <SidebarContent>
                         <Menu >
-                            <MenuItem active={activeMenuItems.inicio} onClick={() => navigate('inicio')} icon={<HomeIcon />}>
+                            <MenuItem active={activeMenuItem=="inicio"} onClick={() => navigate('inicio')} icon={<HomeIcon />}>
                                 INICIO
                             </MenuItem>
-                            <MenuItem active={activeMenuItems.platillos} onClick={() => setActivate("platillos")} icon={<LocalDiningIcon />} >
+                            <MenuItem active={activeMenuItem=="platillos"} onClick={() => setActivate("platillos")} icon={<LocalDiningIcon />} >
                                 PLATILLOS
                             </MenuItem>
-                            <MenuItem active={activeMenuItems.personajes} onClick={() => setActivate("personajes")} icon={<NaturePeopleIcon />}>
+                            <MenuItem active={activeMenuItem=="personajes"} onClick={() => setActivate("personajes")} icon={<NaturePeopleIcon />}>
                                 PERSONAJES
                             </MenuItem>
-                            <MenuItem active={activeMenuItems.festividades} onClick={() => setActivate("festividades")} icon={<DateRangeIcon />}>
+                            <MenuItem active={activeMenuItem=="festividades"} onClick={() => setActivate("festividades")} icon={<DateRangeIcon />}>
                                 FESTIVIDADES
                             </MenuItem>
-                            <MenuItem active={activeMenuItems.notas} onClick={() => setActivate("notas")} icon={<LandscapeIcon />}>
+                            <MenuItem active={activeMenuItem=="notas"} onClick={() => setActivate("notas")} icon={<LandscapeIcon />}>
                                 NOTAS
                             </MenuItem>
-                            <MenuItem active={activeMenuItems.zonas} onClick={() => setActivate("zonas")} icon={<NoteIcon />}>
+                            <MenuItem active={activeMenuItem=="zonas"} onClick={() => setActivate("zonas")} icon={<NoteIcon />}>
                                 ZONAS
                             </MenuItem>
                             <MenuItem icon={<ThumbsUpDownIcon />}>
